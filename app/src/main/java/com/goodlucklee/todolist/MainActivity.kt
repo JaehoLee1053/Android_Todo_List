@@ -9,61 +9,83 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.viewModels
+import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
 import com.goodlucklee.todolist.databinding.ActivityMainBinding
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.item_todo.*
 import kotlinx.android.synthetic.main.item_todo.view.*
 
+// ViewModel Scope
+/*
+* Activity Create
+* onStart() --> onResume() -->
+* */
+/*
+* Activity rotate
+* onPause() --> onStop() --> onDestroy()
+* --> onStart() --> onResume() --> finish()
+* */
+/*
+* onPause() --> onStop() --> onDestroy()
+* Finished
+* */
+// onCleared()
+// 새로운 Activity가 켜져서 기존 데이터가 사라짐
+
 class MainActivity : AppCompatActivity() {
-    val todoList = ArrayList<Todo>()
+    private val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        todoList.add(Todo("HW"))
-        todoList.add(Todo("Clean", true))
-
         val adapter = TodoAdapter(
-            todoList,
+            viewModel.todoList,
             LayoutInflater.from(this@MainActivity),
             onClickDeleteIcon = {
-                deleteTodo(it)
+                viewModel.deleteTodo(it)
+                recycler_view.adapter?.notifyDataSetChanged()
             },
             onClickItem = {
-                toggleTodo(it)
+                viewModel.toggleTodo(it)
+                recycler_view.adapter?.notifyDataSetChanged()
             }
         )
         recycler_view.adapter = adapter
 
         add_button.setOnClickListener {
-            addTodo()
+            val todo = Todo(edit_text.text.toString())
+            viewModel.addTodo(todo)
+            edit_text.text.clear()
+            recycler_view.adapter?.notifyDataSetChanged()
         }
     }
 
-    private fun addTodo() {
-        val todo = Todo(edit_text.text.toString())
-        todoList.add(todo)
-        edit_text.setText("")
-        recycler_view.adapter?.notifyDataSetChanged()
-    }
-
-    private fun deleteTodo(todo: Todo) {
-        todoList.remove(todo)
-        recycler_view.adapter?.notifyDataSetChanged()
-    }
-
-    private fun toggleTodo(todo: Todo) {
-        todo.isDone = !todo.isDone
-        recycler_view.adapter?.notifyDataSetChanged()
-    }
+//    private fun addTodo() {
+//        val todo = Todo(edit_text.text.toString())
+//        todoList.add(todo)
+//        edit_text.setText("")
+//        recycler_view.adapter?.notifyDataSetChanged()
+//    }
+//
+//    private fun deleteTodo(todo: Todo) {
+//        todoList.remove(todo)
+//        recycler_view.adapter?.notifyDataSetChanged()
+//    }
+//
+//    private fun toggleTodo(todo: Todo) {
+//        todo.isDone = !todo.isDone
+//        recycler_view.adapter?.notifyDataSetChanged()
+//    }
 }
 
 class TodoAdapter(
-    var todoList: ArrayList<Todo>,
-    val infalter: LayoutInflater,
-    val onClickDeleteIcon: (todo: Todo) -> Unit,
-    val onClickItem: (todo: Todo) -> Unit
+    private var todoList: ArrayList<Todo>,
+    private val infalter: LayoutInflater,
+    private val onClickDeleteIcon: (todo: Todo) -> Unit,
+    private val onClickItem: (todo: Todo) -> Unit
 ) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
     inner class TodoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val todo: TextView
@@ -90,11 +112,11 @@ class TodoAdapter(
 
         if (!todoElement.isDone) {
             holder.todo.todo_text.apply {
-                paintFlags = paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                paintFlags = 0
             }
         } else {
             holder.todo.todo_text.apply {
-                paintFlags = 0
+                paintFlags = paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
             }
         }
 
@@ -105,5 +127,21 @@ class TodoAdapter(
         holder.todo.todo_text.setOnClickListener {
             onClickItem.invoke(todoElement)
         }
+    }
+}
+
+class MainViewModel : ViewModel() {
+    val todoList = ArrayList<Todo>()
+
+    fun addTodo(todo: Todo) {
+        todoList.add(todo)
+    }
+
+    fun deleteTodo(todo: Todo) {
+        todoList.remove(todo)
+    }
+
+    fun toggleTodo(todo: Todo) {
+        todo.isDone = !todo.isDone
     }
 }
