@@ -1,8 +1,11 @@
 package com.goodlucklee.todolist
 
+import android.app.Activity
+import android.content.Intent
 import android.graphics.Paint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +17,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.IdpResponse
 import com.goodlucklee.todolist.databinding.ActivityMainBinding
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.item_todo.*
 import kotlinx.android.synthetic.main.item_todo.view.*
@@ -37,15 +43,30 @@ import kotlinx.android.synthetic.main.item_todo.view.*
 // 새로운 Activity가 켜져서 기존 데이터가 사라짐
 
 class MainActivity : AppCompatActivity() {
+    val RC_SIGN_IN = 1000;
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // 로그인 안 됨
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            val providers = arrayListOf(
+                AuthUI.IdpConfig.EmailBuilder().build()
+            )
+            startActivityForResult(
+                AuthUI.getInstance()
+                    .createSignInIntentBuilder()
+                    .setAvailableProviders(providers)
+                    .build(),
+                RC_SIGN_IN
+            )
+        }
+
         val adapter = TodoAdapter(
             todoList = viewModel.todoList,
-            LayoutInflater.from(this@MainActivity),
+            infalter = LayoutInflater.from(this@MainActivity),
             onClickDeleteIcon = {
                 viewModel.deleteTodo(it)
             },
@@ -67,22 +88,27 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-//    private fun addTodo() {
-//        val todo = Todo(edit_text.text.toString())
-//        todoList.add(todo)
-//        edit_text.setText("")
-//        recycler_view.adapter?.notifyDataSetChanged()
-//    }
-//
-//    private fun deleteTodo(todo: Todo) {
-//        todoList.remove(todo)
-//        recycler_view.adapter?.notifyDataSetChanged()
-//    }
-//
-//    private fun toggleTodo(todo: Todo) {
-//        todo.isDone = !todo.isDone
-//        recycler_view.adapter?.notifyDataSetChanged()
-//    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d("ddddd", "requestCode: $requestCode")
+
+        if (requestCode == RC_SIGN_IN) {
+            val response = IdpResponse.fromResultIntent(data)
+            Log.d("ddddd", "response: $response")
+            Log.d("ddddd", "resultCode: $resultCode")
+            Log.d("ddddd", "Activity.RESULT_OK: ${Activity.RESULT_OK}")
+
+            if (resultCode == Activity.RESULT_OK) {
+                // Successfully signed in
+                Log.d("ddddd", "Success")
+                val user = FirebaseAuth.getInstance().currentUser
+            } else {
+                // 로그인 실패
+                Log.d("ddddd", "Fail")
+                finish()
+            }
+        }
+    }
 }
 
 
