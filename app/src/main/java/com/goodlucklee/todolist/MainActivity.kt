@@ -6,9 +6,7 @@ import android.graphics.Paint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -52,16 +50,7 @@ class MainActivity : AppCompatActivity() {
 
         // 로그인 안 됨
         if (FirebaseAuth.getInstance().currentUser == null) {
-            val providers = arrayListOf(
-                AuthUI.IdpConfig.EmailBuilder().build()
-            )
-            startActivityForResult(
-                AuthUI.getInstance()
-                    .createSignInIntentBuilder()
-                    .setAvailableProviders(providers)
-                    .build(),
-                RC_SIGN_IN
-            )
+            login()
         }
 
         val adapter = TodoAdapter(
@@ -107,6 +96,44 @@ class MainActivity : AppCompatActivity() {
                 Log.d("ddddd", "Fail")
                 finish()
             }
+        }
+    }
+
+    fun login() {
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.EmailBuilder().build()
+        )
+        startActivityForResult(
+            AuthUI.getInstance()
+                .createSignInIntentBuilder()
+                .setAvailableProviders(providers)
+                .build(),
+            RC_SIGN_IN
+        )
+    }
+
+    fun logout() {
+        AuthUI.getInstance()
+            .signOut(this@MainActivity)
+            .addOnCompleteListener {
+                login()
+            }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.main,  menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            R.id.action_log_out -> {
+                logout()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 }
