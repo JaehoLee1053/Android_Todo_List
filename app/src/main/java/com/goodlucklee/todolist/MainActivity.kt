@@ -48,10 +48,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
+        Log.d("testtttttt", "onCreate")
+        viewModel.fetchData()
+        recycler_view.adapter?.notifyDataSetChanged()
+
         // 로그인 안 됨
         if (FirebaseAuth.getInstance().currentUser == null) {
+            Log.d("testtttttt", "Need Login")
+
             login()
         }
+        Log.d("testtttttt", "Logedin")
 
         val adapter = TodoAdapter(
             todoList = viewModel.todoList,
@@ -66,6 +74,7 @@ class MainActivity : AppCompatActivity() {
         recycler_view.adapter = adapter
 
         add_button.setOnClickListener {
+            Log.d("testtttttt", "add_button.setOnClickListener")
             val todo = Todo(edit_text.text.toString())
             viewModel.addTodo(todo)
             edit_text.text.clear()
@@ -73,27 +82,32 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel.todoLiveData.observe(this@MainActivity, Observer {
+            Log.d("testtttttt", "todoLiveData")
+
             (recycler_view.adapter as TodoAdapter).setData(it)
         })
+
+        Log.d("testtttttt", "onCreate End Pt")
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.d("testtttttt", "onActivityResult")
+
         super.onActivityResult(requestCode, resultCode, data)
-        Log.d("ddddd", "requestCode: $requestCode")
 
         if (requestCode == RC_SIGN_IN) {
             val response = IdpResponse.fromResultIntent(data)
-            Log.d("ddddd", "response: $response")
-            Log.d("ddddd", "resultCode: $resultCode")
-            Log.d("ddddd", "Activity.RESULT_OK: ${Activity.RESULT_OK}")
 
             if (resultCode == Activity.RESULT_OK) {
+                Log.d("testtttttt", "Login Success")
                 // Successfully signed in
-                Log.d("ddddd", "Success")
-                val user = FirebaseAuth.getInstance().currentUser
+                viewModel.fetchData()
+                recycler_view.adapter?.notifyDataSetChanged()
             } else {
+                Log.d("testtttttt", "Login Failed")
+
                 // 로그인 실패
-                Log.d("ddddd", "Fail")
                 finish()
             }
         }

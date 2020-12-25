@@ -15,6 +15,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -46,4 +47,6 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:1.2.2"
     implementation platform('com.google.firebase:firebase-bom:26.2.0')
     implementation 'com.firebaseui:firebase-ui-auth:6.4.0'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.android.support:multidex:1.0.3'
 }
