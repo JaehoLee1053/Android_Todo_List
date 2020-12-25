@@ -4,6 +4,6 @@
 
     <item
         android:id="@+id/action_log_out"
-        android:title="Log_out"
+        android:title="Logout"
         app:showAsAction="ifRoom" />
 </menu>

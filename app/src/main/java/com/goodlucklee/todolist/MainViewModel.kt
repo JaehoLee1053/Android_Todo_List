@@ -1,6 +1,5 @@
 package com.goodlucklee.todolist
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -13,7 +12,7 @@ class MainViewModel : ViewModel() {
     val todoList = ArrayList<Todo>()
 
     init {
-
+        fetchData()
     }
 
     fun fetchData() {
@@ -28,23 +27,13 @@ class MainViewModel : ViewModel() {
                     todoList.clear()
                     for (document in value!!) {
                         val todo = Todo(
-                            document.getString("text") ?: "Empty",
+                            document.getString("text") ?: "",
                             document.getBoolean("isDone") ?: false
                         )
-                        addTodo(todo)
+                        todoList.add(todo)
                     }
+                    todoLiveData.value = todoList
                 }
-//                .get()
-//                .addOnSuccessListener { result ->
-//                    todoList.clear()
-//                    for (document in result) {
-//                        val todo = Todo(
-//                            document.data["text"] as String,
-//                            document.data["isDone"] as Boolean
-//                        )
-//                        addTodo(todo)
-//                    }
-//                }
         }
     }
 
