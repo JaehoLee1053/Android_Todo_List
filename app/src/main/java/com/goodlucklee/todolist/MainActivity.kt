@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.item_todo.*
 import kotlinx.android.synthetic.main.item_todo.view.*
+import java.util.Collections.emptyList
 
 // ViewModel Scope
 /*
@@ -54,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val adapter = TodoAdapter(
-            todoList = viewModel.todoList,
+            todoList = emptyList(),
             infalter = LayoutInflater.from(this@MainActivity),
             onClickDeleteIcon = {
                 viewModel.deleteTodo(it)
@@ -100,7 +101,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun login() {
-        val providers = arrayListOf(
+        val providers = listOf(
             AuthUI.IdpConfig.EmailBuilder().build()
         )
         startActivityForResult(
@@ -122,7 +123,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater: MenuInflater = menuInflater
-        inflater.inflate(R.menu.main,  menu)
+        inflater.inflate(R.menu.main, menu)
         return true
     }
 

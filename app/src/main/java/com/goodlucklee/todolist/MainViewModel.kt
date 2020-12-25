@@ -3,13 +3,14 @@ package com.goodlucklee.todolist
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 class MainViewModel : ViewModel() {
     val db = Firebase.firestore
-    val todoLiveData = MutableLiveData<ArrayList<Todo>>()
-    val todoList = ArrayList<Todo>()
+    val todoLiveData = MutableLiveData<List<DocumentSnapshot>>()
 
     init {
         fetchData()
@@ -24,15 +25,9 @@ class MainViewModel : ViewModel() {
                         return@addSnapshotListener
                     }
 
-                    todoList.clear()
-                    for (document in value!!) {
-                        val todo = Todo(
-                            document.getString("text") ?: "",
-                            document.getBoolean("isDone") ?: false
-                        )
-                        todoList.add(todo)
+                    if (value != null) {
+                        todoLiveData.value = value.documents
                     }
-                    todoLiveData.value = todoList
                 }
         }
     }
@@ -43,13 +38,16 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun deleteTodo(todo: Todo) {
-        todoList.remove(todo)
-        todoLiveData.value = todoList
+    fun deleteTodo(todo: DocumentSnapshot) {
+        FirebaseAuth.getInstance().currentUser?.let { user ->
+            db.collection(user.uid).document(todo.id).delete()
+        }
     }
 
-    fun toggleTodo(todo: Todo) {
-        todo.isDone = !todo.isDone
-        todoLiveData.value = todoList
+    fun toggleTodo(todo: DocumentSnapshot) {
+        FirebaseAuth.getInstance().currentUser?.let { user ->
+            val isDone = todo.getBoolean("isDone") ?: false
+            db.collection(user.uid).document(todo.id).update("isDone", !isDone)
+        }
     }
 }

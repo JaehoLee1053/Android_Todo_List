@@ -7,13 +7,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.android.synthetic.main.item_todo.view.*
 
 class TodoAdapter(
-    private var todoList: ArrayList<Todo>,
+    private var todoList: List<DocumentSnapshot>,
     private val infalter: LayoutInflater,
-    private val onClickDeleteIcon: (todo: Todo) -> Unit,
-    private val onClickItem: (todo: Todo) -> Unit
+    private val onClickDeleteIcon: (todo: DocumentSnapshot) -> Unit,
+    private val onClickItem: (todo: DocumentSnapshot) -> Unit
 ) : RecyclerView.Adapter<TodoAdapter.TodoViewHolder>() {
     inner class TodoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val todo: TextView
@@ -36,9 +37,9 @@ class TodoAdapter(
 
     override fun onBindViewHolder(holder: TodoViewHolder, position: Int) {
         val todoElement = todoList.get(position)
-        holder.todo.setText(todoElement.text)
+        holder.todo.setText(todoElement.getString("text") ?: "")
 
-        if (!todoElement.isDone) {
+        if (!(todoElement.getBoolean("isDone") ?: false)) {
             holder.todo.todo_text.apply {
                 paintFlags = 0
             }
@@ -57,7 +58,7 @@ class TodoAdapter(
         }
     }
 
-    fun setData(newData: ArrayList<Todo>) {
+    fun setData(newData: List<DocumentSnapshot>) {
         todoList = newData
         notifyDataSetChanged()
     }
